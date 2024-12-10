@@ -1,0 +1,1 @@
+Spring Boot component for managing delays and responses of endpoints
