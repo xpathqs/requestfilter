@@ -66,7 +66,7 @@ publishing {
 				}
 			}
 			groupId = "org.xpathqs.api"
-			artifactId = "delaycontroller"
+			artifactId = "requestfilter"
 
 			from(components["java"])
 		}
