@@ -16,10 +16,10 @@ public class DelayConfig {
 
     private final Logger log = LoggerFactory.getLogger(DelayConfig.class);
 
-    AddDelayRequest processUrl(String url) throws InterruptedException {
+    AddDelayRequest process(String url, String body) throws InterruptedException {
         Optional<AddDelayRequest> request = delays
             .stream()
-            .filter((it) -> it.isApplicable(url))
+            .filter((it) -> it.isApplicable(url, body))
             .findFirst();
 
         if(request.isPresent()) {

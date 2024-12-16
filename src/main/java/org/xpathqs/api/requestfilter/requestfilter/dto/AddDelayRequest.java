@@ -3,39 +3,49 @@ package org.xpathqs.api.requestfilter.requestfilter.dto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Objects;
+
 public class AddDelayRequest {
-    public final RequestPattern pattern;
+    public final RequestUrlPattern urlPattern;
+    public final RequestBodyPattern bodyPattern;
     public final ResponseConfig response;
     public final DelayBehaviour delay;
 
     private final Logger log = LoggerFactory.getLogger(AddDelayRequest.class);
 
-    public AddDelayRequest(RequestPattern pattern, ResponseConfig response, DelayBehaviour delay) {
-        this.pattern = pattern;
+    public AddDelayRequest(
+            RequestUrlPattern urlPattern,
+            RequestBodyPattern bodyPattern,
+            ResponseConfig response,
+            DelayBehaviour delay
+    ) {
+        this.urlPattern = urlPattern;
         this.response = response;
         this.delay = delay;
+        this.bodyPattern = bodyPattern;
     }
 
-    public Boolean isApplicable(String url) {
-        if (url.equals(pattern.equals)) {
-            log.info("Apply equals for $url");
-            return true;
-        }
-        if (pattern.startsWith != null && url.startsWith(pattern.startsWith)) {
-            log.info("Apply startsWith for $url");
-            return true;
-        }
-        if (pattern.endsWith != null && url.endsWith(pattern.endsWith)) {
-            log.info("Apply endsWith for $url");
-            return true;
-        }
-        if (pattern.contains != null && url.contains(pattern.contains)) {
-            log.info("Apply contains for $url");
-            return true;
+    public Boolean isApplicable(String url, String body) {
+        if(urlPattern != null) {
+            if(urlPattern.isApplicable(url)) {
+                if(bodyPattern != null) {
+                    return bodyPattern.isApplicable(body);
+                }
+                return true;
+            }
+        } else {
+            if(bodyPattern != null) {
+                return bodyPattern.isApplicable(body);
+            }
         }
 
-        log.info("No filter for $url");
+        log.debug("No filter for {}", url);
 
         return false;
+    }
+
+    public boolean hasSamePattern(AddDelayRequest request) {
+        return Objects.equals(urlPattern, request.urlPattern)
+                && Objects.equals(bodyPattern, request.bodyPattern);
     }
 }

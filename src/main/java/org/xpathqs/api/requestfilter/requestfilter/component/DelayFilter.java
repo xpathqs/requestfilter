@@ -10,8 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.xpathqs.api.requestfilter.requestfilter.dto.AddDelayRequest;
+import org.xpathqs.api.requestfilter.requestfilter.util.CachedBodyHttpServletRequest;
 
 import java.io.IOException;
+import java.util.stream.Collectors;
 
 @Component
 public class DelayFilter implements Filter {
@@ -23,7 +25,8 @@ public class DelayFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        HttpServletRequest request = (HttpServletRequest) servletRequest;
+        CachedBodyHttpServletRequest request =
+                new CachedBodyHttpServletRequest((HttpServletRequest) servletRequest);
         HttpServletResponse response = (HttpServletResponse) servletResponse;
 
         if(config.disableAll) {
@@ -36,8 +39,11 @@ public class DelayFilter implements Filter {
         String path = StringUtils.substringAfter(host,"/");
 
         log.debug("Filter for {}", path);
+
+        String body  = request.getReader().lines().collect(Collectors.joining());
+        log.debug("Body {}", body);
         try {
-            AddDelayRequest afterProcess = config.processUrl(path);
+            AddDelayRequest afterProcess = config.process(path, body);
             if(afterProcess != null && afterProcess.response != null) {
                 log.info("Response set in filter to {} code: {}", afterProcess.response.body, afterProcess.response.code);
                 setResponse(response, afterProcess.response.code, afterProcess.response.body);
